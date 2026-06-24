@@ -45,7 +45,13 @@ const checkDiffs = async (keys: string[]) => {
       .then(snippet => {
         if (snippet == null) return
         process.stdout.write(val + ': ')
-        const fileData = fs.readFileSync(fixesPath + '/' + val).toString()
+        const base = path.resolve(fixesPath)
+        const target = path.resolve(base, val)
+        const relative = path.relative(base, target)
+        if (relative.startsWith('..') || path.isAbsolute(relative)) {
+          throw new Error('Invalid file path')
+        }
+        const fileData = fs.readFileSync(target).toString()
         const diff = Diff.diffLines(filterString(fileData), filterString(snippet.snippet))
         let line = 0
         for (const part of diff) {
@@ -100,7 +106,13 @@ const checkDiffs = async (keys: string[]) => {
 }
 
 async function seePatch (file: string) {
-  const fileData = fs.readFileSync(fixesPath + '/' + file).toString()
+  const resolvedBase = path.resolve(fixesPath)
+  const resolvedTarget = path.resolve(resolvedBase, file)
+  const relativePath = path.relative(resolvedBase, resolvedTarget)
+  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+    throw new Error('Invalid file path')
+  }
+  const fileData = fs.readFileSync(resolvedTarget).toString()
   const snippet = await retrieveCodeSnippet(file.split('_')[0])
   if (snippet == null) return
   const patch = Diff.structuredPatch(file, file, filterString(snippet.snippet), filterString(fileData))

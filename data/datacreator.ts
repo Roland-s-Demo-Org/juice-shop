@@ -38,10 +38,15 @@ const entities = new Entities()
 const readFile = util.promisify(fs.readFile)
 
 function loadStaticData (file: string) {
-  const filePath = path.resolve('./data/static/' + file + '.yml')
-  return readFile(filePath, 'utf8')
+  const base = path.resolve('./data/static/')
+  const target = path.resolve(base, file + '.yml')
+  const relative = path.relative(base, target)
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error('Invalid file path')
+  }
+  return readFile(target, 'utf8')
     .then(safeLoad)
-    .catch(() => logger.error('Could not open file: "' + filePath + '"'))
+    .catch(() => logger.error('Could not open file: "' + target + '"'))
 }
 
 module.exports = async () => {

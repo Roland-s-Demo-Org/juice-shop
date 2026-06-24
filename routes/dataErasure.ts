@@ -66,7 +66,12 @@ router.post('/', async (req: Request<Record<string, unknown>, Record<string, unk
 
     res.clearCookie('token')
     if (req.body.layout) {
-      const filePath: string = path.resolve(req.body.layout).toLowerCase()
+      const userInput = req.body.layout
+      if (userInput.includes('..') || path.isAbsolute(userInput)) {
+        next(new Error('Invalid input'))
+        return
+      }
+      const filePath: string = path.resolve(userInput).toLowerCase()
       const isForbiddenFile: boolean = (filePath.includes('ftp') || filePath.includes('ctf.key') || filePath.includes('encryptionkeys'))
       if (!isForbiddenFile) {
         res.render('dataErasureResult', {
