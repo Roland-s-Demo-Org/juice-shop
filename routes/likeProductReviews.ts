@@ -39,7 +39,7 @@ module.exports = function productReviews () {
                   }
                   challengeUtils.solveIf(challenges.timingAttackChallenge, () => { return count > 2 })
                   db.reviews.update(
-                    { _id: id },
+                    { _id: { $eq: id } },
                     { $set: { likedBy } }
                   ).then(
                     (result: any) => {
