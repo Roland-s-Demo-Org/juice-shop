@@ -30,7 +30,7 @@ module.exports = function resetPassword () {
       SecurityAnswerModel.findOne({
         include: [{
           model: UserModel,
-          where: { email }
+          where: { email: String(email) }
         }]
       }).then((data: SecurityAnswerModel | null) => {
         if ((data != null) && security.hmac(answer) === data.answer) {
