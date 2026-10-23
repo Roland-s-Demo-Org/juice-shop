@@ -15,6 +15,12 @@ const libxml = require('libxmljs2')
 const vm = require('vm')
 const unzipper = require('unzipper')
 
+const isPathInside = (baseDir: string, targetPath: string) => {
+  const rel = path.relative(path.resolve(baseDir), path.resolve(targetPath))
+  return !(rel === '..' || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel))
+}
+
+
 function ensureFileIsPassed ({ file }: Request, res: Response, next: NextFunction) {
   if (file != null) {
     next()
@@ -27,6 +33,9 @@ function handleZipFileUpload ({ file }: Request, res: Response, next: NextFuncti
       const buffer = file.buffer
       const filename = file.originalname.toLowerCase()
       const tempFile = path.join(os.tmpdir(), filename)
+      if (!isPathInside(os.tmpdir(), tempFile)) {
+        return next(new Error('Invalid file path'))
+      }
       fs.open(tempFile, 'w', function (err, fd) {
         if (err != null) { next(err) }
         fs.write(fd, buffer, 0, buffer.length, null, function (err) {
@@ -38,8 +47,8 @@ function handleZipFileUpload ({ file }: Request, res: Response, next: NextFuncti
                 const fileName = entry.path
                 const absolutePath = path.resolve('uploads/complaints/' + fileName)
                 challengeUtils.solveIf(challenges.fileWriteChallenge, () => { return absolutePath === path.resolve('ftp/legal.md') })
-                if (absolutePath.includes(path.resolve('.'))) {
-                  entry.pipe(fs.createWriteStream('uploads/complaints/' + fileName).on('error', function (err) { next(err) }))
+                if (isPathInside('uploads/complaints', absolutePath)) {
+                  entry.pipe(fs.createWriteStream(absolutePath).on('error', function (err) { next(err) }))
                 } else {
                   entry.autodrain()
                 }
