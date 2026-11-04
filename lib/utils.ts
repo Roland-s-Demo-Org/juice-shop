@@ -6,6 +6,7 @@
 /* jslint node: true */
 import packageJson from '../package.json'
 import fs from 'fs'
+import path from 'path'
 import logger from './logger'
 import config from 'config'
 import jsSHA from 'jssha'
@@ -126,6 +127,9 @@ export const extractFilename = (url: string) => {
 }
 
 export const downloadToFile = async (url: string, dest: string) => {
+  if (path.isAbsolute(dest) || dest.split(/[/\\]/).some(s => s === '..')) {
+    throw new Error('Invalid file path')
+  }
   try {
     const data = await download(url)
     fs.writeFileSync(dest, data)
