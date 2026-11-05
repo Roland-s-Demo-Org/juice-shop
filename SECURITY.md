@@ -5,7 +5,7 @@ vulnerabilities which are not part of our hacking challenges. We are following t
 standard <https://securitytxt.org> so you can find our
 "security" policy in any running instance of the application at the expected location described in
 <https://tools.ietf.org/html/draft-foudil-securitytxt-06>. Finding it is actually one of our hacking challenges!
-
+randomcommentfordemoihavenoideawhatimdoingbutineedtodemothislol
 ## Supported Versions
 
 We provide security patches for the latest released minor version.
